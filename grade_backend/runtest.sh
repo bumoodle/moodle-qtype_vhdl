@@ -5,7 +5,7 @@ export PLATFORM=lin64
 export PATH=$PATH:${XILINX}/bin/${PLATFORM}
 export LD_LIBRARY_PATH=${XILINX}/lib/${PLATFORM}
 export FSM_TOOL=/srv/autolab/qfsm2hdl
-export FSMD_TOOL=/usr/local/bin/fsmconv
+export FSMD_TOOL=/srv/autolab/fsmconv
 
 #create the TCL script which runs the test
 #this, incidentally

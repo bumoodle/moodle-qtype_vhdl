@@ -114,10 +114,10 @@ class FSM:
         raw_fsm = json.load(fsm_file)
 
         #create each of the state objects in the FSM
-        for code, state in enumerate(raw_fsm['nodes']):
+        for code, state in enumerate(raw_fsm['states']):
 
             #convert the JSON representation into an FSM state object
-            newState = FSMState.from_JSON(state, code) 
+            newState = FSMState.from_JSON(state) 
 
             #add the state to our dictionary of states
             states[newState.code] = newState
@@ -131,11 +131,11 @@ class FSM:
 
 
         #and parse each of the links in the FSM
-        for link in raw_fsm['links']:
+        for link in raw_fsm['transitions']:
            
             #if we have a reset arc, use it to set the reset state instead of adding it to the FSM
-            if link['type'] == 'StartLink':
-                reset_state = bin(link['node'])[2:]
+            if link['type'] == 'ResetTransition':
+                reset_state = bin(link['destination'])[2:]
 
             #otherwise, it's a normal arc; parse it, and add it to its _source_ state
             else:
@@ -567,13 +567,13 @@ class FSMState:
 
        
     @classmethod
-    def from_JSON(cls, element, code):
+    def from_JSON(cls, element):
 
         #convert the integer state code to binary
-        binCode = bin(code)[2:]
+        binCode = bin(element['id'])[2:]
 
         #and create a new FSM state with the given code
-        return cls(element['text'], binCode, outputs_from_enumeration(element['outputs']))
+        return cls(element['name'], binCode, outputs_from_enumeration(element['outputs']))
     
     @classmethod
     def from_XML(cls, element, outputs):
@@ -603,21 +603,21 @@ class FSMEdge:
     def from_JSON(cls, json_edge):
 
         #determine if the given edge is a Don't Care
-        is_dont_care = (not json_edge['text']) or (json_edge['text'].strip()) == '-'
+        is_dont_care = (not json_edge['condition']) or (json_edge['condition'].strip()) == '-'
 
         #extract the transition condition
-        condition = None if is_dont_care else json_edge['text']
+        condition = None if is_dont_care else json_edge['condition']
 
         #If we have a normal link, then split this into source and target.
         #Note that we convert the given integer state codes to binary, to match QFSM's format.
-        if json_edge['type'] == 'Link':
+        if json_edge['type'] == 'Transition':
             
-            source = bin(json_edge['nodeA'])[2:]
-            target = bin(json_edge['nodeB'])[2:]
+            source = bin(json_edge['source'])[2:]
+            target = bin(json_edge['destination'])[2:]
 
         #Otherwise, if we have a self-link, both the source and the target are the given node.
-        elif json_edge['type'] == 'SelfLink':
-            source = target = bin(json_edge['node'])[2:]
+        elif json_edge['type'] == 'SelfTransition':
+            source = target = bin(json_edge['source'])[2:]
 
         #create a new edge from the JSON node
         return cls(source, target, condition)
