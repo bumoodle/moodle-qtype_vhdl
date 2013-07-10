@@ -126,7 +126,7 @@ class qtype_vhdl extends question_type
         switch($question->options->hdltype)
         {
         	case 'any':
-        		$types_allowed = array('*.vhd', '*.v', '*.sch');
+        		$types_allowed = array('*.vhd', '*.v', '*.sch', '*.sym', '*.fsm', '*.fsmd');
         		break;
         	case 'sch':
         		$types_allowed = array('*.sch', '*.sym');
@@ -140,8 +140,8 @@ class qtype_vhdl extends question_type
         	case 'true':
         		$types_allowed = array('*.vhd', '*.v');
         		break;
-		case 'fsm':
-			$types_allowed = array('*.fsm');
+            case 'fsm':
+                $types_allowed = array('*.fsm', '*.fsmd');
 			break;
         	
         }

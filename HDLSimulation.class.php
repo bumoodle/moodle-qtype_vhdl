@@ -35,7 +35,7 @@ class InvalidFiletypeException extends SimulationException {}
  */
 class HDLSimulation
 {
-    const KEEP_FILES = false;
+    const KEEP_FILES = true;
 
     /**
      * Stores the temporary working "sandbox" directory for the simulation.
@@ -254,6 +254,7 @@ class HDLSimulation
 
     /**
      * Create working copies of the user and reference designs in the working directory.
+     * FIXME FIXME FIXME refactor/rewrite this mess!
      *
      * @throws InvalidFiletypeException If the user tried to upload a filetype that wasn't allowed.
      */
@@ -267,6 +268,11 @@ class HDLSimulation
         else if(self::filecount($this->userdesign) === 1 && self::file_extension(self::first_file($this->userdesign)->get_filename()) == "fsm")
         {
             self::first_file($this->userdesign)->copy_content_to($this->work_dir.'/design.fsm');
+        }
+        //If we have no file extension, assume a FSMD file; this is a peculairty of FSMDesigner on certain browsers
+        else if(self::filecount($this->userdesign) === 1 && self::file_extension(self::first_file($this->userdesign)->get_filename()) == false) 
+        {
+            self::first_file($this->userdesign)->copy_content_to($this->work_dir.'/design.fsmd');
         }
         else
         {
@@ -320,9 +326,15 @@ class HDLSimulation
 
     /**
      * Returns the file extension of a filename, which may not exist in the filesystem.
+     * Returns false if the file has no extension.
      */
     protected static function file_extension($filename)
     {
+        //If we don't have a period, this file doesn't have an extension; return false.
+        if(strpos($filename, '.') === false)  {
+            return;
+        }
+
         return strtolower(substr(strrchr($filename, '.'), 1));
     }
 

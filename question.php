@@ -187,7 +187,7 @@ class qtype_vhdl_question extends question_graded_automatically
     	switch($types)
     	{
 		case 'fsm':
-				return array('fsm');
+				return array('fsm', 'fsmd');
     		case 'sch':
 				return array('sch', 'sym');
     		case 'vhdl':
@@ -198,7 +198,7 @@ class qtype_vhdl_question extends question_graded_automatically
 				return array('vhd', 'vhdl', 'v');
 			case 'all':
 			default:
-				return array('sch', 'vhd', 'vhdl', 'v');	
+				return array('sch', 'vhd', 'vhdl', 'v', 'sym', 'fsm', 'fsmd');	
     	
     	}
     } 

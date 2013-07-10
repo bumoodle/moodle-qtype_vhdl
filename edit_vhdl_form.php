@@ -47,7 +47,7 @@ class qtype_vhdl_edit_form extends question_edit_form
         	'maxfiles' => 25,
         	'subdirs' => 0, 
         	'maxbytes' => 5242880, //5 MiB (may be limited further by Moodle's built-in maximum upload size)
-        	'accepted_types' => array('*.vhd', '*.v', '*.sch', '*.fsm', '*.zip'));
+        	'accepted_types' => array('*.vhd', '*.v', '*.sch', '*.fsm', '*.fsmd', '*.zip'));
 	
 	
     /**

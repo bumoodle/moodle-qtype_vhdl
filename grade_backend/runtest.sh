@@ -5,6 +5,7 @@ export PLATFORM=lin64
 export PATH=$PATH:${XILINX}/bin/${PLATFORM}
 export LD_LIBRARY_PATH=${XILINX}/lib/${PLATFORM}
 export FSM_TOOL=/srv/autolab/qfsm2hdl
+export FSMD_TOOL=/usr/local/bin/fsmconv
 
 #create the TCL script which runs the test
 #this, incidentally
@@ -16,21 +17,34 @@ echo "quit" >> sim.tcl
 for i in *.sch
 do
 	if [ -f $i ]; then 
-			sch2vhdl $i
+			sch2vhdl "$i"
 	fi
 done
 
-#convert all present FSM files to VHDL
+#convert all present fsm files to vhdl
 for i in *.fsm
 do
     if [ -f $i ] 
     then
-	    ${FSM_TOOL} $i > $i.vhd	
+	    ${FSM_TOOL} "$i" > "$i.vhd"
 	
 	    if [ $? -ne 0 ]; then
-			
 			cat $i.vhd
-			exit $LAST_ERROR
+			exit $last_error
+	    fi
+    fi
+done
+
+#convert all present fsm files to vhdl
+for i in *.fsmd
+do
+    if [ -f $i ] 
+    then
+	    ${FSMD_TOOL} "$i" > "$i.vhd"
+	
+	    if [ $? -ne 0 ]; then
+			cat $i.vhd
+			exit $last_error
 	    fi
     fi
 done
