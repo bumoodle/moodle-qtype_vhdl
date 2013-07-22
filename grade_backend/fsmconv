@@ -486,8 +486,14 @@ class FSM:
         #
         # combinational process
         #
-        
-        buf += '    process(state, ' + ', '.join(self.inputs) + ')\n'
+	
+	if self.inputs:	        
+	    buf += '    process(state, ' + ', '.join(self.inputs) + ')\n'		
+        else:
+	    buf += '    process(state)\n'
+
+
+
         buf += '    begin\n\n'
         buf += '        case state is\n\n'
         

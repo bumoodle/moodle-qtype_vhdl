@@ -35,7 +35,8 @@ class InvalidFiletypeException extends SimulationException {}
  */
 class HDLSimulation
 {
-    const KEEP_FILES = true;
+    const KEEP_FILES = false;
+    const USE_CACHE = true;
 
     /**
      * Stores the temporary working "sandbox" directory for the simulation.
@@ -133,6 +134,7 @@ class HDLSimulation
 
     /**
      * Returns a fraction iff the given testbench/design combination has been run before; to save CPU time.
+     * TODO: Rename this to get_memoized
      * 
      * @param stored_file $reference    The testbench design.
      * @param stored_file $user_design  The user's design file.
@@ -141,6 +143,11 @@ class HDLSimulation
     protected function get_cached()
     {
         global $DB;
+
+        // If the USE_CACHE option isn't set, always re-run the simulations.
+        if(!self::USE_CACHE) {
+            return null;
+        }
 
         //merge the hashes from the testbench and user design; so we'll re-run the testbench if either of the two changes
         $hash = $this->get_hash();
