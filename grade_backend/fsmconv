@@ -57,7 +57,11 @@ class CodeBuilder(object):
         #add the given line to the code...
         self += line
 
+
 class JSBuilder(CodeBuilder):
+    """
+      Extended CodeBuilder for creating JavaScript code.
+    """
 
     def add_call(self, name, *args):
         self += name + '(' + ','.join(args) + ');'
@@ -239,6 +243,7 @@ class FSM:
         #return a new FSM object
         return FSM(inputs, outputs, outputs_moore, outputs_mealy, states, reset_state)
 
+    
     def to_javascript(self, state_outputs=None, clock=None, reset=None):
         """
             Converts the given FSM object to a FixedSim representation.
@@ -541,7 +546,12 @@ class FSM:
             
         return buf
 
+
+
 class FSMState:
+    """
+      Class representing a Finite State Machine state.
+    """
     
     def __init__(self, name, code, output, out_edges = None):
         
@@ -562,15 +572,12 @@ class FSMState:
         return '<FSMState "' + self.name + '" (' + str(self.code) +')>'
 
     def get_output_string(self, outputs):
-        
         buf = ""
 
         for output_name in outputs:
             buf += self.output[output_name]
 
         return buf
-
-
        
     @classmethod
     def from_JSON(cls, element):
@@ -579,7 +586,7 @@ class FSMState:
         binCode = bin(element['id'])[2:]
 
         #and create a new FSM state with the given code
-        return cls(element['name'], binCode, outputs_from_enumeration(element['outputs']))
+        return cls(element['name'], binCode, cls.outputs_from_enumeration(element['outputs']))
     
     @classmethod
     def from_XML(cls, element, outputs):
@@ -592,8 +599,88 @@ class FSMState:
 
         #return the newly-created FSM state
         return FSMState(element.text, element.attrib['code'], moore_outputs)
+
+    @classmethod
+    def outputs_from_enumeration(cls, outputs):
+        """
+          Extracts a list of output-to-value mappings.
+          TODO: Move into one of the given classes?
+          TODO: PEP-8-ize variable names
+        """
+
+        #define the way an output name can look
+        identifiers = pyparsing.alphanums + '_[]():'
+        outputName = pyparsing.Word(identifiers)
+
+        #define the way an output value can look
+        outputValue = pyparsing.Word('01')
+
+        #and define an output statement
+        outputDefinition = pyparsing.ZeroOrMore(pyparsing.Group(outputName + pyparsing.Literal('=').suppress() + outputValue))
+
+        #parse the string into a list of name-value pairs
+        outputs = dict(list(outputDefinition.parseString(outputs)))
+
+        #expand bus outputs, if any exist
+        outputs = cls.expand_bus_outputs(outputs)
+
+        return outputs
+
+    @classmethod
+    def expand_bus_outputs(cls, outputs):
+      """
+        Expands outputs in bus format into a set of single-bit outputs.
+      """
+
+      expanded_outputs = {}
+
+      #Iterate over each of the given outputs...
+      for name, value in outputs.iteritems():
+
+        #And expand any bus outputs that exist.
+        new_output = cls.expand_bus_output(name, value)
+        expanded_outputs.update(new_output)
+      
+      return expanded_outputs
+
+
+    @classmethod
+    def expand_bus_output(cls, name, value):
+
+      #Create the pyparsing tokens which identify a bus subscript (indexed range).
+      identifier = pyparsing.alphanums + '_'
+      index = pyparsing.Word(pyparsing.nums)
+      subscript = pyparsing.Literal('[').suppress() + pyparsing.Group(index + pyparsing.Literal(':').suppress() + index + pyparsing.Literal(']').suppress())
+
+      #And create the pyparsing compound token that represents an output name. 
+      output_definition = pyparsing.Word(identifier) + pyparsing.Optional(subscript)
+
+      #Break the name down into its components.
+      parsed_name = output_definition.parseString(name)
+
+      #Extract the base name from the output name.
+      base_name = parsed_name[0]
+
+      #If this wasn't a bus input, return it directly.
+      if len(parsed_name) == 1:
+        return dict([(name, value)])
+
+      #Otherwise, return each of its bits in part.
+      left_bound  = int(parsed_name[1][0])
+      right_bound = int(parsed_name[1][1])
+      direction   = -1 if left_bound > right_bound else 1
+      components  = range(left_bound, right_bound + direction, direction)
+
+      #TODO: Change this to a format other than the simple string
+      return {(base_name + str(index) , output_bit) for index, output_bit in zip(components, value)}
+
+
+
     
 class FSMEdge:
+    """
+    Class representing a Finite State Machine transition.
+    """
     
     def __init__(self, source, target, condition, output=None):
         
@@ -692,6 +779,7 @@ def algebra_to_VHDL(algebra_notation, inputs):
     
     #and convert that ASL to VHDL
     return asl_to_VHDL(asl)
+
 
 def algebra_to_JS(algebra_notation, inputs):
     """
@@ -841,21 +929,6 @@ def inputs_from_algebra(algebra_notation):
     return asl.difference(set(('*', '\'', '+', '^')))
 
 
-def outputs_from_enumeration(outputs):
-
-    #define the way an output name can look
-    identifiers = pyparsing.alphanums + '_[]'
-    outputName = pyparsing.Word(identifiers)
-
-    #define the way an output value can look
-    outputValue = pyparsing.Word('01')
-
-    #and define an output statement
-    outputDefinition = pyparsing.ZeroOrMore(pyparsing.Group(outputName + pyparsing.Literal('=').suppress() + outputValue))
-
-    #parse the string into a list of name-value pairs
-    return dict(list(outputDefinition.parseString(outputs)))
-
 
 def flatten(l):
     """
@@ -898,7 +971,7 @@ def parse_algebraic(algebra_notation, inputs=None):
     #use the newly created grammar to convert the boolean expression into an abstract syntax list
     try:
         asl = algebraExpresion.parseString(algebra_notation)[0]
-    except pyparsing.ParseException, e:
+    except pyparsing.ParseException:
         print 'ERROR:HDL: Could not understand your arc condition "', algebra_notation, '". Your answer should have been a Boolean expression in terms of your FSM\'s inputs: ', inputs
         sys.exit(10); 
     
