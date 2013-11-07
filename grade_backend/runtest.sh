@@ -16,34 +16,20 @@ echo "quit" >> sim.tcl
 #convert all present schematic files to VHDL
 for i in *.sch
 do
-	if [ -f $i ]; then 
+	if [ -f "$i" ]; then 
 			sch2vhdl "$i"
 	fi
 done
 
 #convert all present fsm files to vhdl
-for i in *.fsm
+for i in *.fsmd *.fsm
 do
-    if [ -f $i ] 
-    then
-	    ${FSM_TOOL} "$i" > "$i.vhd"
-	
-	    if [ $? -ne 0 ]; then
-			cat $i.vhd
-			exit $last_error
-	    fi
-    fi
-done
-
-#convert all present fsm files to vhdl
-for i in *.fsmd
-do
-    if [ -f $i ] 
+    if [ -f "$i" ]
     then
 	    ${FSMD_TOOL} "$i" > "$i.vhd"
 	
 	    if [ $? -ne 0 ]; then
-			cat $i.vhd
+			cat "$i.vhd"
 			exit $last_error
 	    fi
     fi
