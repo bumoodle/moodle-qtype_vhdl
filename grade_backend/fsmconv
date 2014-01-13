@@ -616,7 +616,7 @@ class FSMState:
         outputValue = pyparsing.Word('01')
 
         #and define an output statement
-        outputDefinition = pyparsing.ZeroOrMore(pyparsing.Group(outputName + pyparsing.Literal('=').suppress() + outputValue))
+        outputDefinition = pyparsing.ZeroOrMore(pyparsing.Group(outputName + pyparsing.Literal('=').suppress() + outputValue + pyparsing.Optional(pyparsing.Literal(',').suppress())))
 
         #parse the string into a list of name-value pairs
         outputs = dict(list(outputDefinition.parseString(outputs)))

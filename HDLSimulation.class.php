@@ -362,6 +362,10 @@ class HDLSimulation
             //if there is, use it
             if($cached)
             {
+                //Always fetch the raw output for the command.
+                //TODO: possibly only fetch this on error?
+                $this->raw_output = explode("\n", $cached->raw_output);
+
                 //if the run was valid, restore the marks
                 if($cached->valid)
                     $this->marks = unserialize($cached->marks);
@@ -416,6 +420,7 @@ class HDLSimulation
         $cache->fileshash = $this->get_hash();
         $cache->date = time();
         $cache->valid = is_array($this->marks);
+        $cache->raw_output = implode("\n", $this->raw_output);
 
         //if we have a valid cache entry, seralize the marks 
         if($cache->valid)
@@ -481,8 +486,17 @@ class HDLSimulation
     {
         $grade = 100;
 
-        if($this->marks === false || !is_array($this->marks))
-            throw new SimulationException($this->last_error);
+        if($this->marks === false || !is_array($this->marks)) {
+
+            //TODO FIXME XXX: Replace with capability!    
+            if(is_siteadmin()){
+                $additional_info = '<pre style="white-space: pre-wrap">'.htmlentities(implode("\n", $this->raw_output)).'</pre>';
+            } else {
+                $additional_info = '';
+            }
+                
+            throw new SimulationException($this->last_error . $additional_info);
+        }
             
         //if the array is empty, there were no merits or demerits; assume 100%
         if(!count($this->marks))

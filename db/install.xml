@@ -1,30 +1,31 @@
-<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="question/type/vhdl/db" VERSION="20120606" COMMENT="XMLDB file for Moodle question/type/vhdl" xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd">
+<XMLDB xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" PATH="question/type/vhdl/db" VERSION="20140103" COMMENT="XMLDB file for Moodle question/type/vhdl" xsi:noNamespaceSchemaLocation="../../../../lib/xmldb/xmldb.xsd">
 <TABLES>
-<TABLE NAME="question_vhdl" COMMENT="Options for VHDL questions" NEXT="question_vhdl_cache">
+<TABLE NAME="question_vhdl" COMMENT="Options for VHDL questions">
 <FIELDS>
-<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="question"/>
-<FIELD NAME="question" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" COMMENT="Foreign key references question.id." PREVIOUS="id" NEXT="hdltype"/>
-<FIELD NAME="hdltype" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" COMMENT="Accepted HDL response types." PREVIOUS="question" NEXT="allowmulti"/>
-<FIELD NAME="allowmulti" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="true" SEQUENCE="false" COMMENT="Allows multiple files in a user response" PREVIOUS="hdltype" NEXT="allowzip"/>
-<FIELD NAME="allowzip" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" COMMENT="Allow the students to submit zip files." PREVIOUS="allowmulti" NEXT="testbench"/>
-<FIELD NAME="testbench" TYPE="text" LENGTH="medium" NOTNULL="false" SEQUENCE="false" COMMENT="Filename for the grading testbench." PREVIOUS="allowzip" NEXT="autofeedback"/>
-<FIELD NAME="autofeedback" TYPE="int" LENGTH="1" NOTNULL="false" UNSIGNED="false" SEQUENCE="false" COMMENT="Allows the testbench to specify user feedback as well as grading." PREVIOUS="testbench"/>
+<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+<FIELD NAME="question" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Foreign key references question.id."/>
+<FIELD NAME="hdltype" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Accepted HDL response types."/>
+<FIELD NAME="allowmulti" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Allows multiple files in a user response"/>
+<FIELD NAME="allowzip" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Allow the students to submit zip files."/>
+<FIELD NAME="testbench" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Filename for the grading testbench."/>
+<FIELD NAME="autofeedback" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Allows the testbench to specify user feedback as well as grading."/>
 </FIELDS>
 <KEYS>
-<KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="question"/>
-<KEY NAME="question" TYPE="foreign" FIELDS="question" REFTABLE="question" REFFIELDS="id" PREVIOUS="primary"/>
+<KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+<KEY NAME="question" TYPE="foreign" FIELDS="question" REFTABLE="question" REFFIELDS="id"/>
 </KEYS>
 </TABLE>
-<TABLE NAME="question_vhdl_cache" COMMENT="execution cache for the VHDL question type" PREVIOUS="question_vhdl">
+<TABLE NAME="question_vhdl_cache" COMMENT="execution cache for the VHDL question type">
 <FIELDS>
-<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="fileshash"/>
-<FIELD NAME="fileshash" TYPE="text" LENGTH="medium" NOTNULL="true" SEQUENCE="false" COMMENT="hash of the file set to be evaluated" PREVIOUS="id" NEXT="valid"/>
-<FIELD NAME="valid" TYPE="int" LENGTH="1" NOTNULL="true" UNSIGNED="false" SEQUENCE="false" COMMENT="fractional grade returned by the testbench" PREVIOUS="fileshash" NEXT="marks"/>
-<FIELD NAME="marks" TYPE="text" LENGTH="big" NOTNULL="false" SEQUENCE="false" COMMENT="Automatic, testbench-generated comments." PREVIOUS="valid" NEXT="date"/>
-<FIELD NAME="date" TYPE="number" LENGTH="11" NOTNULL="false" SEQUENCE="false" COMMENT="Date during which the testbench was run; used for expiry." PREVIOUS="marks"/>
+<FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+<FIELD NAME="fileshash" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="hash of the file set to be evaluated"/>
+<FIELD NAME="valid" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false" COMMENT="fractional grade returned by the testbench"/>
+<FIELD NAME="marks" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="Automatic, testbench-generated comments."/>
+<FIELD NAME="date" TYPE="number" LENGTH="11" NOTNULL="false" SEQUENCE="false" DECIMALS="0" COMMENT="Date during which the testbench was run; used for expiry."/>
+<FIELD NAME="raw_output" TYPE="text" NOTNULL="false" SEQUENCE="false" COMMENT="The raw output of the testbench tool."/>
 </FIELDS>
 <KEYS>
-    <KEY NAME="primary" TYPE="primary" FIELDS="id" />
+<KEY NAME="primary" TYPE="primary" FIELDS="id"/>
 </KEYS>
 </TABLE>
 </TABLES>
