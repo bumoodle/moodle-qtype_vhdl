@@ -110,7 +110,7 @@ class RemoteHDLSimulation extends HDLSimulation
     /**
      * Perform the actual simualtion.
      */
-    public function run_simulation()
+    public function run_simulation($force_rerun = false, $cache=true)
     {
         //attempt to limit the runtime of the application
         //(the server typically has its own value- we may or may not be allowed to overwrite it
