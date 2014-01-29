@@ -55,12 +55,12 @@ class qtype_vhdl_question extends question_graded_automatically
         return null;
     }
 
+    /**
+     * Returns true iff the given response indicates a complete, gradable student
+     * attempt at the given question.
+     */ 
     public function is_complete_response(array $response)
     {
-        //if the response does not specify any files, it must be incomplete
-        if(!$this->files_specified($response))
-            return false;
-
         //otherwise, try processing it
         try
         {
@@ -105,9 +105,15 @@ class qtype_vhdl_question extends question_graded_automatically
 
     public function get_autograde_feedback(array $response)
     {
-        //if this response has no files, then never return feedback
-        if(!$this->files_specified($response))
+
+        //Attempt to get the files necessary to test the student response.
+        list(, $files) = $this->get_files_necessary_for_testing($response);
+
+        //If this response has no files, then notify the user, and don't
+        //generate any feedback.
+        if(!count($files)) {
             return get_string('pleasesubmit', 'qtype_vhdl');
+        }
 
         try
         {
@@ -143,26 +149,9 @@ class qtype_vhdl_question extends question_graded_automatically
      */
     protected function process_response(array $response)
     {
-        global $USER;
-    
-        if(!array_key_exists('answerraw', $response))
-            return;
 
-        //first, get a reference to Moodle's file storage controller
-        $file_storage = get_file_storage();
-
-        //and get a reference to the current user's draft files (which house the newly uploaded file)
-        $user_context = context_user::instance($USER->id);
-
-        //get a reference to the stored testbench
-        $testbench = $file_storage->get_area_files($this->contextid, 'qtype_vhdl', 'testbench', $this->testbench);
-
-        //attempt to get the uploaded file, if possible
-        $user_design = $file_storage->get_area_files($this->contextid, 'question', 'response_answer', $response['attemptid'], 'sortorder', false);
-
-        //if this fails, retrieve the local copy from the draft area
-        if(!count($user_design))
-            $user_design = $file_storage->get_area_files($user_context->id, 'user', 'draft', $response['answerraw']);
+        //Fetch both the testbench, and the UUT design.
+        list($testbench, $user_design) = $this->get_files_necessary_for_testing($response);
 
         //create a new HDL Simulation object
         $sim = new HDLSimulation($testbench, $user_design, self::elaborate_types($this->hdltype));
@@ -175,6 +164,46 @@ class qtype_vhdl_question extends question_graded_automatically
 
         //return the marks and the afforded fraction
         return array('marks' => $sim->get_marks(), 'fraction' => $sim->get_grade(), 'hash' => $sim->get_hash(), 'feedback' => $sim->get_marks_str());
+    }
+
+    protected function get_files_necessary_for_testing(array $response) {
+
+        global $USER;
+
+        //first, get a reference to Moodle's file storage controller
+        $file_storage = get_file_storage();
+
+        //get a reference to the stored testbench
+        $testbench = $file_storage->get_area_files($this->contextid, 'qtype_vhdl', 'testbench', $this->testbench);
+
+        //If we have a "question_file_loader" object (e.g. if this is a regrade),
+        //use that to grade the given question.
+        $hasanswer = !empty($response['answer']);
+        if($hasanswer && $response['answer'] instanceof question_response_files) {
+            return array($testbench, $response['answer']->get_files());
+        } 
+
+        //TODO: handle question_file_savers
+               
+        //TODO: remove me, as well as most of the rest?
+        if(!array_key_exists('answerraw', $response)) {
+            return array($testbench, array());
+        }
+
+        //and get a reference to the current user's draft files (which house the newly uploaded file)
+        $user_context = context_user::instance($USER->id);
+
+        //attempt to get the uploaded file, if possible
+        $user_design = $file_storage->get_area_files($this->contextid, 'question', 'response_answer', $response['attemptid'], 'sortorder', false);
+
+        //if this fails, retrieve the local copy from the draft area
+        if(!count($user_design)) {
+            $user_design = $file_storage->get_area_files($user_context->id, 'user', 'draft', $response['answerraw']);
+        }
+
+        //Return both the testbench and the UUT design.
+        return array($testbench, $user_design);
+
     }
 
 
