@@ -24,9 +24,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Provides the information to backup truefalse questions
+ * Provides the information to backup vhdl questions
  */
-class backup_qtype_truefalse_plugin extends backup_qtype_plugin {
+class backup_qtype_vhdl_plugin extends backup_qtype_plugin {
 
     /**
      * Returns the qtype information to attach to question element
@@ -47,17 +47,18 @@ class backup_qtype_truefalse_plugin extends backup_qtype_plugin {
         // to the tree before any other information that will use them
         $this->add_question_question_answers($pluginwrapper);
 
-        // Now create the qtype own structures
-        $truefalse = new backup_nested_element('truefalse', array('id'), array(
-            'trueanswer', 'falseanswer'));
+        // Populate each of the question options...
+        $vhdl = new backup_nested_element('vhdl', array('id'), 
+            array( 'hdltype', 'allowmulti', 'allowzip', 'testbench', 'autofeedback'));
 
         // Now the own qtype tree
-        $pluginwrapper->add_child($truefalse);
+        $pluginwrapper->add_child($vhdl);
 
         // set source to populate the data
-        $truefalse->set_source_table('question_truefalse', array('question' => backup::VAR_PARENTID));
+        $vhdl->set_source_table('question_vhdl', array('question' => backup::VAR_PARENTID));
 
-        // don't need to annotate ids nor files
+        // ... including the question files.
+        $vhdl->annotate_files('qtype_vhdl', 'testbench', 'testbench');
 
         return $plugin;
     }

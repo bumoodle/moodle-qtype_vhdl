@@ -1,5 +1,4 @@
 <?php
-
 // This file is part of Moodle - http://moodle.org/
 //
 // Moodle is free software: you can redistribute it and/or modify
@@ -22,13 +21,18 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+
 defined('MOODLE_INTERNAL') || die();
+
 
 /**
  * restore plugin class that provides the necessary information
- * needed to restore one truefalse qtype plugin
+ * needed to restore one vhdl qtype plugin
+ *
+ * @copyright  2010 onwards Eloy Lafuente (stronk7) {@link http://stronk7.com}
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class restore_qtype_truefalse_plugin extends restore_qtype_plugin {
+class restore_qtype_vhdl_plugin extends restore_qtype_plugin {
 
     /**
      * Returns the paths to be handled by the plugin at question level
@@ -41,18 +45,18 @@ class restore_qtype_truefalse_plugin extends restore_qtype_plugin {
         $this->add_question_question_answers($paths);
 
         // Add own qtype stuff
-        $elename = 'truefalse';
-        $elepath = $this->get_pathfor('/truefalse'); // we used get_recommended_name() so this works
+        $elename = 'vhdl';
+        // we used get_recommended_name() so this works
+        $elepath = $this->get_pathfor('/vhdl');
         $paths[] = new restore_path_element($elename, $elepath);
-
 
         return $paths; // And we return the interesting paths
     }
 
     /**
-     * Process the qtype/truefalse element
+     * Process the qtype/vhdl element
      */
-    public function process_truefalse($data) {
+    public function process_vhdl($data) {
         global $DB;
 
         $data = (object)$data;
@@ -63,33 +67,26 @@ class restore_qtype_truefalse_plugin extends restore_qtype_plugin {
         $newquestionid   = $this->get_new_parentid('question');
         $questioncreated = $this->get_mappingid('question_created', $oldquestionid) ? true : false;
 
-        // If the question has been created by restore, we need to create its question_truefalse too
+        // If the question has been created by restore, we need to create its
+        // question_vhdl entry too
         if ($questioncreated) {
-            // Adjust some columns
+
+            // Adjust the new question ID.
             $data->question = $newquestionid;
-            $data->trueanswer = $this->get_mappingid('question_answer', $data->trueanswer);
-            $data->falseanswer = $this->get_mappingid('question_answer', $data->falseanswer);
+
             // Insert record
-            $newitemid = $DB->insert_record('question_truefalse', $data);
+            $newitemid = $DB->insert_record('question_vhdl', $data);
+
             // Create mapping
-            $this->set_mapping('question_truefalse', $oldid, $newitemid);
-        } else {
-            // Nothing to remap if the question already existed
+            $this->set_mapping('question_vhdl', $oldid, $newitemid);
+
         }
     }
 
     /**
-     * Given one question_states record, return the answer
-     * recoded pointing to all the restored stuff for truefalse questions
-     *
-     * if not empty, answer is one question_answers->id
-     */
-    public function recode_state_answer($state) {
-        $answer = $state->answer;
-        $result = '';
-        if ($answer) {
-            $result = $this->get_mappingid('question_answer', $answer);
-        }
-        return $result;
+     * After the given question is restored, add the relevant testbench file.
+     */ 
+    public function after_execute_question() {
+      $this->add_related_files('qtype_vhdl', 'testbench', null);
     }
 }
